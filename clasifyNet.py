@@ -1,90 +1,133 @@
-from pybrain.datasets import ClassificationDataSet
 from pybrain.tools.shortcuts import buildNetwork
-from pybrain.datasets import SupervisedDataSet
 from pybrain.supervised import BackpropTrainer
 from pybrain.tools.xml.networkwriter import NetworkWriter
-from letters import *
-from brail import *
+from pybrain.tools.xml.networkreader import NetworkReader
+
 import time
-from random import randint
 from pybrain.structure.modules   import LinearLayer,StateDependentLayer,GaussianLayer,SoftmaxLayer, SigmoidLayer,LSTMLayer, TanhLayer
 import string
 
+from Utils import Utils
+from NormalTester import NormalTester
+from ClasifierTester import ClasifierTester
+import pickle
 
-def addRandomNosie(percentOfNoise, data):
-    numberOfNoise = len(data)*0.01*percentOfNoise
-    newData = []
-    newData = data
-    for i in range(int(numberOfNoise)):
-        randNr = randint(0, len(data)-1)
-        newData[randNr] = 1 if data[randNr] == -1 else -1
-    return newData
-def getInputData():
-    inputData = dict()
-    for letter in lettersDict:
-        inputData[letter] =  [(x*2)-1 for x in lettersDict[letter]]
-    return inputData
+def training(inputData, hiddenNodesArg = 55, learningRateArg = 0.004,
+        momentumArg=0.99, biasArg=True, recurrentArg=True,
+        hiddenclassArg = SoftmaxLayer, outclassArg = SoftmaxLayer,
+        epochs = 22):
 
-def createClassificationDataset(inputData):
-    data = ClassificationDataSet(100,nb_classes=len(inputData.keys()), class_labels=inputData.keys())
-    allTheLetters = string.uppercase
-    for i in range(100):
-        for letter in inputData.keys():
-            data.addSample(inputData[letter], allTheLetters.index(letter)) 
-    
-    data._convertToOneOfMany([0,1])
-    print data.calculateStatistics()
-
-    return data
-
-def createDataset(inputData):
-    data = SupervisedDataSet(100,6)
-    for i in range(10):
-        for letter in inputData.keys():
-            data.addSample(inputData[letter], brailDict[letter])       
-    return data
-
-
-def training(d):
-    net = buildNetwork(d.indim, 25,25,25,  d.outdim, bias=True,recurrent=True, hiddenclass =SigmoidLayer , outclass = SigmoidLayer)
-    t = BackpropTrainer(net, d,learningrate = 0.01,momentum=0.8, verbose = True)
-    t.trainUntilConvergence(continueEpochs=1200, maxEpochs=1100)
+    net = buildNetwork(inputData.indim, hiddenNodesArg, inputData.outdim, bias = biasArg ,recurrent = recurrentArg , hiddenclass = hiddenclassArg , outclass = outclassArg)
+    t = BackpropTrainer(net, inputData,learningrate = learningRateArg, momentum = momentumArg, verbose = False)
+    t.trainUntilConvergence(continueEpochs=1200, maxEpochs = epochs)
     NetworkWriter.writeToFile(net, 'myNetwork'+str(time.time())+'.xml')
-    return t
+    return t, net 
 
-def testWithClassTrainingData(trained, inputData, noisePercentRate = 0):
-    print "TEST--------------> Noise: "+str(noisePercentRate)+"%"
-    allTheLetters = string.uppercase
-    testdata =  ClassificationDataSet(100, nb_classes=len(inputData.keys()), class_labels=inputData.keys())   
-    for letter in inputData.keys():
-        testdata.addSample(addRandomNosie(noisePercentRate, inputData[letter]), allTheLetters.index(letter))
-    testdata._convertToOneOfMany([0,1])
-    trained.testOnData(testdata, verbose= True)
+def doCalsificationTestWithHiddenNodes():
+    print "----------------> Clasifier: Hidden nodes test BEGIN<------------------"
+    tester = ClasifierTester()
+    trainingdata = tester.createDataset(inputData)
+    for i in range(1):
+        print "Testing with i = "+str(i)+" , hiddenNodesArg = "+str((i+1)*5)
+        trained, net = training(trainingdata, hiddenNodesArg=55)
+        tester.testUntilWrongWithAllLetters(net, inputData)
+    print "----------------> Clasifier: Hidden nodes test END<------------------"
 
-def testWithTrainingData(trained, inputData, noisePercentRate = 0):
-    print "TEST--------------> Noise: "+str(noisePercentRate)+"%"
-    testdata =  SupervisedDataSet(100, 6)   
-    for letter in inputData.keys():
-            testdata.addSample(addRandomNosie(noisePercentRate, inputData[letter]), brailDict[letter])
-    trained.testOnData(testdata, verbose= True)
+def doTranslationTestWithHiddenNodes():
+    print "----------------> Translator: Hidden nodes test BEGIN<------------------"
+    tester = NormalTester()
+    trainingdata = tester.createDataset(inputData)
+    for i in range(20):
+        print "Testing with i = "+str(i)+" , hiddenNodesArg = "+str((i+1)*5)
+        trained, net = training(trainingdata,hiddenNodesArg=(i+1)*5, hiddenclassArg = SigmoidLayer, outclassArg = SigmoidLayer)
+        tester.testUntilWrongWithAllLetters(net, inputData)
+    print "----------------> Translator: Hidden nodes test END<------------------"
+
+def doCalsificationTestWithMomentum():
+    print "----------------> Clasifier: Momentum test BEGIN<------------------"
+    tester = ClasifierTester()
+    trainingdata = tester.createDataset(inputData)
+    for i in range(20):
+        print "Testing with i = "+str(i)+" , momentumArg = "+str((i+1)*0.05)
+        trained, net = training(trainingdata, momentumArg=(i+1)*0.05)
+        tester.testUntilWrongWithAllLetters(net, inputData)
+    print "----------------> Clasifier: Momentum test END<------------------"
+
+def doTranslationTestWithMomentum():
+    print "----------------> Translator: Momentum test BEGIN<------------------"
+    tester = NormalTester()
+    trainingdata = tester.createDataset(inputData)
+    for i in range(20):
+        print "Testing with i = "+str(i)+" , momentumArg = "+str((i+1)*0.05)
+        trained, net = training(trainingdata,momentumArg=(i+1)*0.05, hiddenclassArg = SigmoidLayer, outclassArg = SigmoidLayer)
+        tester.testUntilWrongWithAllLetters(net, inputData)
+    print "----------------> Translator: Momentum test END<------------------"
+
+def doCalsificationTestWithLearningRate():
+    print "----------------> Clasifier: learningRate test BEGIN<------------------"
+    tester = ClasifierTester()
+    trainingdata = tester.createDataset(inputData)
+    for i in range(20):
+        print "Testing with i = "+str(i)+" , learningRateArg = "+str((i+1)*0.001)
+        trained, net = training(trainingdata, learningRateArg=(i+1)*0.001)
+        tester.testUntilWrongWithAllLetters(net, inputData)
+    print "----------------> Clasifier: learningRate test END<------------------"
+
+def doTranslationTestWithLearningRate():
+    print "----------------> Translator: learningRate test BEGIN<------------------"
+    tester = NormalTester()
+    trainingdata = tester.createDataset(inputData)
+    for i in range(20):
+        print "Testing with i = "+str(i)+" , learningRateArg = "+str((i+1)*0.001)
+        trained, net = training(trainingdata,learningRateArg=(i+1)*0.001, hiddenclassArg = SigmoidLayer, outclassArg = SigmoidLayer)
+        tester.testUntilWrongWithAllLetters(net, inputData)
+    print "----------------> Translator: learningRate test END<------------------"
+
+def doCalsificationTestWithLongTraining():
+    print "----------------> Clasifier: Long training 1000 epochs test BEGIN<------------------"
+    tester = ClasifierTester()
+    trainingdata = tester.createDataset(inputData)
+    print "Testing Long training 1000 epochsArg = "
+    trained, net = training(trainingdata,epochs = 1000, learningRateArg=0.02)
+    tester.testUntilWrongWithAllLetters(net, inputData)
+    print "----------------> Clasifier: Long training 1000 epochs test END<------------------"
+
+def doTranslationTestWithLongTraining():
+    print "----------------> Translator: Long training 1000 epochs test BEGIN<------------------"
+    tester = NormalTester()
+    trainingdata = tester.createDataset(inputData)
+    print "Testing Long training 1000 epochsArg = "
+    trained, net = training(trainingdata,epochs = 1000, learningRateArg=0.016, hiddenclassArg = SigmoidLayer, outclassArg = SigmoidLayer)
+    tester.testUntilWrongWithAllLetters(net, inputData)
+    print "----------------> Translator: Long training 1000 epochs test END<------------------"
+def doTranslationTestFromLoadedNN(filename):
+
+    print "----------------> Translator: Loaded NN test BEGIN<------------------"
+    tester = NormalTester()
+    trainingdata = tester.createDataset(inputData)
+    net = NetworkReader.readFrom(filename)
+    tester.testUntilWrongWithAllLetters(net, inputData)
+    print "----------------> Translator: Loaded NN test END<------------------"
+def doCalsificationTestFromLoadedNN(filename):
+    print "----------------> Clasifier: Loaded NN test BEGIN<------------------"
+    tester = ClasifierTester()
+    trainingdata = tester.createDataset(inputData)
+    net = NetworkReader.readFrom(filename)
+    tester.testUntilWrongWithAllLetters(net, inputData)
+    print "----------------> Clasifier: Loaded NN test END<------------------"
 
 
-def testWithChangedChars(trained, inputData):
-    print "TEST--------------> Changed C"
-    testdata =  SupervisedDataSet(100, 6)    
-    testdata.addSample(testDict["Cbold"], brailDict["C"])
-    testdata.addSample(testDict["C1bold"], brailDict["C"])
-    testdata.addSample(testDict["Cnoise"], brailDict["C"])
-    trained.testOnData(testdata, verbose= True)
+util = Utils()
+inputData = util.getInputData()
+doCalsificationTestWithHiddenNodes()
+# doTranslationTestWithHiddenNodes()
+# doCalsificationTestWithMomentum()
+# doTranslationTestWithMomentum()
+# doCalsificationTestWithLearningRate()
+# doTranslationTestWithLearningRate()
+# doCalsificationTestWithLongTraining()
+# doCalsificationTestWithLongTraining()
+doTranslationTestFromLoadedNN('automatic_translation_trained_2013-101-03-17-17.xml')
+doTranslationTestFromLoadedNN('sigma_sigma_trained.xml.xml')
+doCalsificationTestFromLoadedNN('myNetwork.xml')
 
-
-inputData = getInputData()
-trainingdata = createDataset(inputData)
-trained = training(trainingdata)
-testWithChangedChars(trained, inputData)
-testWithTrainingData(trained, inputData, 0)
-testWithTrainingData(trained, inputData, 2)
-testWithTrainingData(trained, inputData, 4)
-# testWithTrainingData(trained, inputData, 8)
-# testWithTrainingData(trained, inputData, 16)
-# testWithTrainingData(trained, inputData, 32)
