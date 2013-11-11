@@ -79,14 +79,14 @@ class Utils:
         factor = 1
         maxLoopsWithoutChange = 1000
         loopsWithoutChange = 0
-        while(p < numberOfPixels):            
+        while p < numberOfPixels:            
             pixelIndex = pixelIndexesList[p%len(pixelIndexesList)]
             randShiftX = randint(-1*factor,  1*factor)
             randShiftY = randint(-1*factor,  1*factor)
 
             changedColumn = pixelIndex%sizeSqrt+randShiftX
             changedLine = math.floor(pixelIndex/sizeSqrt)+randShiftY
-            if(changedColumn>0 and changedColumn<sizeSqrt and changedLine>0 and changedLine<sizeSqrt):
+            if changedColumn>0 and changedColumn<sizeSqrt and changedLine>0 and changedLine<sizeSqrt:
                 if(newData[int(changedLine*sizeSqrt+changedColumn)] != 1):
                     newData[int(changedLine*sizeSqrt+changedColumn)] = 1
                     loopsWithoutChange = 0
@@ -96,9 +96,11 @@ class Utils:
             else:
                 loopsWithoutChange = loopsWithoutChange +1
 
-            if(loopsWithoutChange > maxLoopsWithoutChange*factor):
+            if loopsWithoutChange > maxLoopsWithoutChange*factor:
                 loopsWithoutChange = 0
-                factor = factor +1  
+                factor = factor +1
+            if factor > 10:
+                break; 
         
         return newData
     
