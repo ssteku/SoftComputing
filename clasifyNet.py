@@ -11,6 +11,7 @@ from Utils import Utils
 from NormalTester import NormalTester
 from ClasifierTester import ClasifierTester
 import pickle
+from TestPlan import TestPlan
 
 def training(inputData, hiddenNodesArg = 55, learningRateArg = 0.004,
         momentumArg=0.99, biasArg=True, recurrentArg=True,
@@ -100,26 +101,28 @@ def doTranslationTestWithLongTraining():
     trained, net = training(trainingdata,epochs = 1000, learningRateArg=0.016, hiddenclassArg = SigmoidLayer, outclassArg = SigmoidLayer)
     tester.testUntilWrongWithAllLetters(net, inputData)
     print "----------------> Translator: Long training 1000 epochs test END<------------------"
-def doTranslationTestFromLoadedNN(filename):
+def doTranslationTestFromLoadedNN(filename, testPlan):
 
     print "----------------> Translator: Loaded NN test BEGIN<------------------"
     tester = NormalTester()
     trainingdata = tester.createDataset(inputData)
     net = NetworkReader.readFrom(filename)
-    tester.testUntilWrongWithAllLetters(net, inputData)
+    testPlan.test(net, inputData, tester)
     print "----------------> Translator: Loaded NN test END<------------------"
-def doCalsificationTestFromLoadedNN(filename):
+def doCalsificationTestFromLoadedNN(filename, testPlan):
     print "----------------> Clasifier: Loaded NN test BEGIN<------------------"
     tester = ClasifierTester()
     trainingdata = tester.createDataset(inputData)
     net = NetworkReader.readFrom(filename)
-    tester.testUntilWrongWithAllLetters(net, inputData)
+    testPlan.test(net, inputData, tester)
     print "----------------> Clasifier: Loaded NN test END<------------------"
 
 
 util = Utils()
 inputData = util.getInputData()
-doCalsificationTestWithHiddenNodes()
+print "testUntilWrongWithAllLetters: len input data: "+str(len(inputData))
+
+# doCalsificationTestWithHiddenNodes()
 # doTranslationTestWithHiddenNodes()
 # doCalsificationTestWithMomentum()
 # doTranslationTestWithMomentum()
@@ -127,7 +130,7 @@ doCalsificationTestWithHiddenNodes()
 # doTranslationTestWithLearningRate()
 # doCalsificationTestWithLongTraining()
 # doCalsificationTestWithLongTraining()
-doTranslationTestFromLoadedNN('automatic_translation_trained_2013-101-03-17-17.xml')
-doTranslationTestFromLoadedNN('sigma_sigma_trained.xml.xml')
-doCalsificationTestFromLoadedNN('myNetwork.xml')
+testPlan = TestPlan()
+doTranslationTestFromLoadedNN('automatic_translation_trained_2013-101-03-17-17.xml', testPlan)
+doCalsificationTestFromLoadedNN('clasify_trained.xml', testPlan)
 
