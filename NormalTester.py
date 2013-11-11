@@ -41,16 +41,17 @@ class NormalTester:
 
     def testWithRemovedVerticalLine(self, trained, inputData, letter):
         sizeSqrt = math.sqrt(len(inputData[letter]))
-        avarageSum = 0        
+        avarageSum = sizeSqrt       
         for i in range(int(sizeSqrt)):
             if not self.checkIfCorrect(trained.activate(self.util.removeLineVerticaly(i, inputData[letter])), brailDict[letter]):
-                avarageSum = avarageSum + 1                
-        return 100*avarageSum/sizeSqrt
+                avarageSum = avarageSum - 1                
         
+        return 100*avarageSum/sizeSqrt    
+    
     def testWithRemovedHorizontalLine(self, trained, inputData, letter):
         sizeSqrt = math.sqrt(len(inputData[letter]))
-        avarageSum = 0
+        avarageSum = sizeSqrt        
         for i in range(int(sizeSqrt)):
             if not self.checkIfCorrect(trained.activate(self.util.removeLineHorizontal(i, inputData[letter])), brailDict[letter]):
-                avarageSum = avarageSum + 1
-        return 100*avarageSum/sizeSqrt 
+                avarageSum = avarageSum - 1
+        return 100*avarageSum/sizeSqrt
