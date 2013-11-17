@@ -14,6 +14,13 @@ class TestPlan:
         chartDrawer = ChartDrawer(inputData.keys())  
         chartDrawer.addChart("All")
         chartDrawer.addChart("Removed_lines")  
+        chartDrawer.addChart("RandNoise")  
+        chartDrawer.addChart("VerLine")  
+        chartDrawer.addChart("HorLine")  
+        chartDrawer.addChart("LinesHor")  
+        chartDrawer.addChart("LinesVer")  
+        chartDrawer.addChart("Squares")  
+        chartDrawer.addChart("Adjecent")  
         avarageSum = 0
         resultList = list()
         print "------------>> Test with random noise Begin <<---------------"
@@ -24,7 +31,7 @@ class TestPlan:
             print "Letter: "+letter+" fail with percent err: "+str(result)+"%"
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with random noise End <<---------------"
-        chartDrawer.addResults("Maximum negated random pixels without error",resultList, ["All"])  
+        chartDrawer.addResults("Maximum negated random pixels without error",resultList, ["All", "RandNoise"])  
 
         avarageSum = 0
         resultList = list()
@@ -36,7 +43,7 @@ class TestPlan:
             print "Letter: "+letter+" error in : "+str(result)+"% cases" 
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with removed 1 line End <<---------------"
-        chartDrawer.addResults("Succes rate of removal 1 vertical line",resultList, ["Removed_lines"])  
+        chartDrawer.addResults("Succes rate of removal 1 vertical line",resultList, ["Removed_lines", "VerLine"])  
 
         avarageSum = 0
         resultList = list()
@@ -48,7 +55,7 @@ class TestPlan:
             print "Letter: "+letter+" error in : "+str(result)+"% cases" 
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with removed 1 horizontal line End <<---------------"
-        chartDrawer.addResults("Succes rate of removal 1 horizontal line",resultList, ["Removed_lines"])  
+        chartDrawer.addResults("Succes rate of removal 1 horizontal line",resultList, ["Removed_lines", "HorLine"])  
 
         avarageSum = 0
         resultList = list()
@@ -62,7 +69,7 @@ class TestPlan:
             print "Letter: "+letter+" avarage error with removed : "+str(result)+" lines" 
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with number of horizontal lines End <<---------------"
-        chartDrawer.addResults("Removed number of horizontal lines",resultList, ["All"])  
+        chartDrawer.addResults("Removed number of horizontal lines",resultList, ["All", "LinesHor"])  
 
         avarageSum = 0
         resultList = list()
@@ -76,7 +83,7 @@ class TestPlan:
             print "Letter: "+letter+" avarage error with removed : "+str(result)+" lines" 
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with number of Vertical lines End <<---------------"
-        chartDrawer.addResults("Removed number of vertical lines",resultList, ["All"])  
+        chartDrawer.addResults("Removed number of vertical lines",resultList, ["All", "LinesVer"])  
 
 
         avarageSum = 0
@@ -91,7 +98,7 @@ class TestPlan:
             print "Letter: "+letter+" avarage error with removed square of size: "+str(result) 
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with removed square End <<---------------"
-        chartDrawer.addResults('Removed squares of size',resultList, ["All"])  
+        chartDrawer.addResults('Removed squares of size',resultList, ["All", "Squares"])  
 
         
         avarageSum = 0
@@ -105,5 +112,5 @@ class TestPlan:
             print "Letter: "+letter+" avarage error with added number of pixels: "+str(result)
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with random adjecent pixels End <<---------------"
-        chartDrawer.addResults('Adjecent pixels number',resultList, ["All"])  
+        chartDrawer.addResults('Adjecent pixels number',resultList, ["All", "Adjecent"])  
         chartDrawer.saveChartToFile("TestPlanResultsChart_"+tester.__class__.__name__)
