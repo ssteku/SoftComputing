@@ -12,15 +12,15 @@ class TestPlan:
 
     def test(self, trained, inputData, tester):     
         chartDrawer = ChartDrawer(inputData.keys())  
-        chartDrawer.addChart("All")
-        chartDrawer.addChart("Removed_lines")  
-        chartDrawer.addChart("RandNoise")  
-        chartDrawer.addChart("VerLine")  
-        chartDrawer.addChart("HorLine")  
-        chartDrawer.addChart("LinesHor")  
-        chartDrawer.addChart("LinesVer")  
-        chartDrawer.addChart("Squares")  
-        chartDrawer.addChart("Adjecent")  
+        chartDrawer.addChart("All", legendFontSize = 8)
+        chartDrawer.addChart("Removed_lines", "The possible avarage number of removed lines without wrong recognition", y_label="Number of lines")  
+        chartDrawer.addChart("RandNoise",  "The possible avarage number of negated pixels without wrong recognition (in %)", y_label="Number of negated pixels (in %)")  
+        chartDrawer.addChart("VerLine", "The success rate of removal 1 vertical line for each character (in %)", y_label="Success rate (in %)")  
+        chartDrawer.addChart("HorLine",  "The success rate of removal 1 horizontal line for each character (in %)", y_label="Success rate (in %)")  
+        chartDrawer.addChart("LinesHor",  "The possible avarage number of removed horizontal lines without wrong recognition",  y_label="Number of removed horizontal lines")  
+        chartDrawer.addChart("LinesVer",  "The possible avarage number of removed vertical lines without wrong recognition", y_label="Number of removed vertical lines")  
+        chartDrawer.addChart("Squares", "The possible avarage size of removed square with random position without wrong recognition", y_label="Square size (in pixels)")  
+        chartDrawer.addChart("Adjecent", "The possible avarage number of adjecent to character pixels without wrong recognition",  y_label="Number of adjecent pixels")  
         avarageSum = 0
         resultList = list()
         print "------------>> Test with random noise Begin <<---------------"
@@ -31,7 +31,7 @@ class TestPlan:
             print "Letter: "+letter+" fail with percent err: "+str(result)+"%"
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with random noise End <<---------------"
-        chartDrawer.addResults("Maximum negated random pixels without error",resultList, ["All", "RandNoise"])  
+        chartDrawer.addResults("Number of negated pixels",resultList, ["All", "RandNoise"])  
 
         avarageSum = 0
         resultList = list()
@@ -69,7 +69,7 @@ class TestPlan:
             print "Letter: "+letter+" avarage error with removed : "+str(result)+" lines" 
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with number of horizontal lines End <<---------------"
-        chartDrawer.addResults("Removed number of horizontal lines",resultList, ["All", "LinesHor"])  
+        chartDrawer.addResults("Avarage number of removed horizontal lines",resultList, ["All", "LinesHor"])  
 
         avarageSum = 0
         resultList = list()
@@ -83,7 +83,7 @@ class TestPlan:
             print "Letter: "+letter+" avarage error with removed : "+str(result)+" lines" 
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with number of Vertical lines End <<---------------"
-        chartDrawer.addResults("Removed number of vertical lines",resultList, ["All", "LinesVer"])  
+        chartDrawer.addResults("Avarage number of removed vertical lines",resultList, ["All", "LinesVer"])  
 
 
         avarageSum = 0
@@ -98,7 +98,7 @@ class TestPlan:
             print "Letter: "+letter+" avarage error with removed square of size: "+str(result) 
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with removed square End <<---------------"
-        chartDrawer.addResults('Removed squares of size',resultList, ["All", "Squares"])  
+        chartDrawer.addResults("Avarage size of removed squares",resultList, ["All", "Squares"])  
 
         
         avarageSum = 0
@@ -112,5 +112,5 @@ class TestPlan:
             print "Letter: "+letter+" avarage error with added number of pixels: "+str(result)
         print "Avarage error : " + str(avarageSum/len(inputData))
         print "------------>> Test with random adjecent pixels End <<---------------"
-        chartDrawer.addResults('Adjecent pixels number',resultList, ["All", "Adjecent"])  
+        chartDrawer.addResults("Avarage number of adjecent pixels",resultList, ["All", "Adjecent"])  
         chartDrawer.saveChartToFile("TestPlanResultsChart_"+tester.__class__.__name__)
